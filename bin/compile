@@ -37,6 +37,11 @@ ls "$BUILD_DIR"
 
 cd "$BUILD_DIR"
 
+puts_step 'ENV'
+env
+python --version
+python3 --version
+
 
 ### Install node/yarn
 
@@ -67,6 +72,11 @@ puts_step 'build webpack bundle'
 yarn build
 
 cd "$BUILD_DIR"
+
+### Configure NGINX
+puts_step 'configure nginx'
+mkdir -p "$BUILD_DIR/config"
+cp "$BUILD_DIR/nginx/nginx.conf.erb" "$BUILD_DIR/config"
 
 ### Compile stuff
 

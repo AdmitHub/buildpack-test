@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# https://devcenter.heroku.com/articles/buildpack-api#bin-release
+
+cat << EOF
+addons: []
+default_process_types:
+    web: ls -a && ls webpack_bundle && env && echo $PWD
+EOF

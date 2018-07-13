@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# https://devcenter.heroku.com/articles/buildpack-api#bin-compile
+
+### Configure environment
+
+set -o errexit    # always exit on error
+set -o pipefail   # don't ignore exit codes when piping output
+unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
+
+### Configure directories
+
+BUILD_DIR=${1:-}
+CACHE_DIR=${2:-}
+ENV_DIR=${3:-}
+BP_DIR=$(cd "$(dirname "$0")"; cd ..; pwd)
+
+### Load the standard lib
+
+STDLIB_FILE=$(mktemp -t stdlib.XXXXX)
+curl --silent --retry 5 --retry-max-time 15 'https://lang-common.s3.amazonaws.com/buildpack-stdlib/v7/stdlib.sh' > "$STDLIB_FILE"
+source "$STDLIB_FILE"
+
+### Load env vars
+
+export_env "$ENV_DIR"
+
+### Vendor files into the build dir (which becomes /app at runtime)
+
+# cp -r "$BP_DIR/app/." "$BUILD_DIR"
+echo 'bp dir'
+ls "$BP_DIR"
+
+
+
+echo 'build dir'
+ls "$BUILD_DIR"
+
+cd "$BUILD_DIR"
+
+
+### Install node/yarn
+
+# create directory for installed utilities
+mkdir -p .heroku/node
+mkdir -p .heroku/yarn
+# add to path
+export PATH="$PATH:$BUILD_DIR/.heroku/node/bin:$BUILD_DIR/.heroku/yarn/bin"
+
+puts_step 'install node & yarn'
+
+curl --silent --retry 5 --retry-max-time 15 "https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-x64.tar.xz" -o /tmp/node.tar.xz
+tar xf /tmp/node.tar.xz -C .heroku/node --strip 1
+
+curl --silent --retry 5 --retry-max-time 15 -L "https://github.com/yarnpkg/yarn/releases/download/v1.7.0/yarn-v1.7.0.tar.gz" -o /tmp/yarn.tar.gz
+tar zxf /tmp/yarn.tar.gz -C .heroku/yarn --strip 1
+
+echo 'yarn version:' $(yarn --version)
+echo 'node version:' $(node --version)
+
+### Install node dependencies
+cd "$BUILD_DIR/frontend"
+puts_step 'install node dependencies'
+yarn install --frozen-lockfile --non-interactive
+
+### Build webpack bundle
+puts_step 'build webpack bundle'
+yarn build
+
+cd "$BUILD_DIR"
+
+### Compile stuff
+
+echo "🎉  Finished!"

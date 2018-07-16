@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # https://devcenter.heroku.com/articles/buildpack-api#bin-compile
 
+# TODO: Use node buildpack and just make this super simple
 ### Configure environment
 
 set -o errexit    # always exit on error
@@ -26,22 +27,7 @@ export_env "$ENV_DIR"
 
 ### Vendor files into the build dir (which becomes /app at runtime)
 
-# cp -r "$BP_DIR/app/." "$BUILD_DIR"
-echo 'bp dir'
-ls "$BP_DIR"
-
-
-
-echo 'build dir'
-ls "$BUILD_DIR"
-
 cd "$BUILD_DIR"
-
-puts_step 'ENV'
-env
-python --version
-python3 --version
-
 
 ### Install node/yarn
 
@@ -69,19 +55,17 @@ yarn install --frozen-lockfile --non-interactive
 # install toml for pyproject conversion script
 yarn add toml
 
-
 ### Convert pyproject.lock to requirements.txt
 puts_step 'convert python dependencies'
 cp "$BP_DIR/pyproject-to-requirements.js" .
 
 node 'pyproject-to-requirements.js' "$BUILD_DIR/backend/pyproject.lock" > "$BUILD_DIR/requirements.txt"
-echo 'requirements.txt'
+puts_step 'converted python requirements'
 cat "$BUILD_DIR/requirements.txt"
 
 ### Build webpack bundle
 puts_step 'build webpack bundle'
 yarn build
-
 
 ### Configure NGINX
 puts_step 'configure nginx'

@@ -66,12 +66,22 @@ echo 'node version:' $(node --version)
 cd "$BUILD_DIR/frontend"
 puts_step 'install node dependencies'
 yarn install --frozen-lockfile --non-interactive
+# install toml for pyproject conversion script
+yarn add toml
+
+
+### Convert pyproject.lock to requirements.txt
+puts_step 'convert python dependencies'
+cp "$BP_DIR/pyproject-to-requirements.js" .
+
+node 'pyproject-to-requirements.js' "$BUILD_DIR/backend/pyproject.lock" > "$BUILD_DIR/requirements.txt"
+echo 'requirements.txt'
+cat "$BUILD_DIR/requirements.txt"
 
 ### Build webpack bundle
 puts_step 'build webpack bundle'
 yarn build
 
-cd "$BUILD_DIR"
 
 ### Configure NGINX
 puts_step 'configure nginx'

@@ -59,7 +59,16 @@ yarn add toml
 puts_step 'convert python dependencies'
 cp "$BP_DIR/toml-to-requirements.js" .
 
-node 'toml-to-requirements.js' "$BUILD_DIR/backend/poetry.lock" > "$BUILD_DIR/requirements.txt"
+if [ -f $BUILD_DIR/backend/poetry.lock ]; then
+  LOCKFILE=$BUILD_DIR/backend/poetry.lock
+elif [ -f $BUILD_DIR/backend/pyproject.lock ]; then
+  LOCKFILE=$BUILD_DIR/backend/pyproject.lock
+else
+  echo "Lockfile not found!" 1>&2
+  exit 1
+fi
+
+node 'toml-to-requirements.js' "$LOCKFILE" > "$BUILD_DIR/requirements.txt"
 puts_step 'converted python requirements'
 cat "$BUILD_DIR/requirements.txt"
 

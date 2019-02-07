@@ -52,14 +52,14 @@ echo 'node version:' $(node --version)
 cd "$BUILD_DIR/frontend"
 puts_step 'install node dependencies'
 yarn install --frozen-lockfile --non-interactive
-# install toml for pyproject conversion script
+# install toml for poetry conversion script
 yarn add toml
 
-### Convert pyproject.lock to requirements.txt
+### Convert poetry.lock to requirements.txt
 puts_step 'convert python dependencies'
-cp "$BP_DIR/pyproject-to-requirements.js" .
+cp "$BP_DIR/toml-to-requirements.js" .
 
-node 'pyproject-to-requirements.js' "$BUILD_DIR/backend/pyproject.lock" > "$BUILD_DIR/requirements.txt"
+node 'toml-to-requirements.js' "$BUILD_DIR/backend/poetry.lock" > "$BUILD_DIR/requirements.txt"
 puts_step 'converted python requirements'
 cat "$BUILD_DIR/requirements.txt"
 

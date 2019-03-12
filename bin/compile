@@ -39,10 +39,10 @@ export PATH="$PATH:$BUILD_DIR/.heroku/node/bin:$BUILD_DIR/.heroku/yarn/bin"
 
 puts_step 'install node & yarn'
 
-curl --silent --retry 5 --retry-max-time 15 "https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-x64.tar.xz" -o /tmp/node.tar.xz
+curl --silent --retry 5 --retry-max-time 15 "https://nodejs.org/dist/v11.11.0/node-v11.11.0-linux-x64.tar.xz" -o /tmp/node.tar.xz
 tar xf /tmp/node.tar.xz -C .heroku/node --strip 1
 
-curl --silent --retry 5 --retry-max-time 15 -L "https://github.com/yarnpkg/yarn/releases/download/v1.7.0/yarn-v1.7.0.tar.gz" -o /tmp/yarn.tar.gz
+curl --silent --retry 5 --retry-max-time 15 -L "https://github.com/yarnpkg/yarn/releases/download/v1.15.0/yarn-v1.15.0.tar.gz" -o /tmp/yarn.tar.gz
 tar zxf /tmp/yarn.tar.gz -C .heroku/yarn --strip 1
 
 echo 'yarn version:' $(yarn --version)

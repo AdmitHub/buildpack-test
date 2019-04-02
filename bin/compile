@@ -61,6 +61,7 @@ cd "$BUILD_DIR/frontend"
 puts_step 'install node dependencies'
 # move cached node_modules
 if [ -d $CACHE_DIR/node-modules-cache/node_modules ]; then
+    echo '>> found cached node_modules directory'
     mv  $CACHE_DIR/node-modules-cache/node_modules $BUILD_DIR/frontend/node_modules
 fi
 # setup yarn cache
@@ -92,6 +93,7 @@ yarn build
 
 # move cache back
 if [ -d $BUILD_DIR/frontend/node_modules ]; then
+    echo '>> saving node_modules directory'
     mv $BUILD_DIR/frontend/node_modules  $CACHE_DIR/node-modules-cache/node_modules
 fi
 

@@ -97,7 +97,8 @@ yarn build
 # move cache back
 if [ -d $BUILD_DIR/frontend/node_modules ]; then
     echo '>> saving node_modules directory'
-    mv $BUILD_DIR/frontend/node_modules  $CACHE_DIR/node-modules-cache/node_modules
+    mkdir -p $CACHE_DIR/node-modules-cache
+    mv $BUILD_DIR/frontend/node_modules  $CACHE_DIR/node-modules-cache
 fi
 
 ### Configure NGINX

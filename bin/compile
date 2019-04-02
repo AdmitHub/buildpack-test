@@ -28,16 +28,13 @@ export_env "$ENV_DIR"
 ### Vendor files into the build dir (which becomes /app at runtime)
 
 cd "$BUILD_DIR"
+
+### Install aws cli
+puts_step 'install aws cli'
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
 ./awscli-bundle/install -b ~/bin/aws
 export PATH=~/bin:$PATH
-### TESTING
-mkdir -p $BUILD_DIR/frontend/build
-echo helloworld123 > $BUILD_DIR/frontend/build/some-item
-echo blah > $BUILD_DIR/frontend/build/other-item
-aws s3 cp --recursive $BUILD_DIR/frontend/build "s3://$S3_PUBLIC_ASSET_BUCKET_NAME/frontend"
-### TESTING
 
 ### Install node/yarn
 

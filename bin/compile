@@ -59,9 +59,12 @@ echo 'node version:' $(node --version)
 ### Install node dependencies
 cd "$BUILD_DIR/frontend"
 puts_step 'install node dependencies'
-yarn install --frozen-lockfile --non-interactive
+# cache node_modules
+mkdir -p $CACHE_DIR/yarn-install-cache
+mkdir -p $CACHE_DIR/yarn-modules-cache
+yarn install --frozen-lockfile --non-interactive --cache-folder $CACHE_DIR/yarn-install-cache --modules-folder $CACHE_DIR/yarn-modules-cache
 # install toml for poetry conversion script
-yarn add toml
+yarn add --modules-folder $CACHE_DIR/yarn-modules-cache toml
 
 ### Convert poetry.lock to requirements.txt
 puts_step 'convert python dependencies'
@@ -82,9 +85,7 @@ cat "$BUILD_DIR/requirements.txt"
 
 ### Build webpack bundle
 puts_step 'build webpack bundle'
-yarn build
-# we don't need node_modules after we've built the bundles
-rm -rf $BUILD_DIR/frontend/node_modules
+yarn --modules-folder $CACHE_DIR/yarn-modules-cache toml build
 
 ### Configure NGINX
 puts_step 'configure nginx'

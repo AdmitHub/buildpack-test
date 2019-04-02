@@ -84,7 +84,7 @@ cat "$BUILD_DIR/requirements.txt"
 
 ### Build webpack bundle
 puts_step 'build webpack bundle'
-yarn toml build
+yarn build
 
 ### Configure NGINX
 puts_step 'configure nginx'

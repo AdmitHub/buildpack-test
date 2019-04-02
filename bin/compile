@@ -25,16 +25,20 @@ source "$STDLIB_FILE"
 
 export_env "$ENV_DIR"
 
+### Install aws cli
+puts_step 'install aws cli'
+if [ ! -d "$CACHE_DIR/awscli/awscli-bundle" ]; then
+    mkdir -p "$CACHE_DIR/awscli"
+    curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "$CACHE_DIR/awscli/awscli-bundle.zip"
+    unzip "$CACHE_DIR/awscli/awscli-bundle.zip" -d "$CACHE_DIR/awscli"
+fi
+$CACHE_DIR/awscli/awscli-bundle/install -b ~/bin/aws
+export PATH=~/bin:$PATH
+
 ### Vendor files into the build dir (which becomes /app at runtime)
 
 cd "$BUILD_DIR"
 
-### Install aws cli
-puts_step 'install aws cli'
-curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-unzip awscli-bundle.zip
-./awscli-bundle/install -b ~/bin/aws
-export PATH=~/bin:$PATH
 
 ### Install node/yarn
 
@@ -58,9 +62,16 @@ echo 'node version:' $(node --version)
 ### Install node dependencies
 cd "$BUILD_DIR/frontend"
 puts_step 'install node dependencies'
-yarn install --frozen-lockfile --non-interactive
+# move cached node_modules
+if [ -d $CACHE_DIR/node-modules-cache/node_modules ]; then
+    echo '>> found cached node_modules directory'
+    mv  $CACHE_DIR/node-modules-cache/node_modules $BUILD_DIR/frontend/node_modules
+fi
+# setup yarn cache
+mkdir -p $CACHE_DIR/yarn-install-cache
+yarn install --frozen-lockfile --non-interactive --cache-folder $CACHE_DIR/yarn-install-cache
 # install toml for poetry conversion script
-yarn add toml
+yarn add --cache-folder $CACHE_DIR/yarn-install-cache --no-lockfile toml
 
 ### Convert poetry.lock to requirements.txt
 puts_step 'convert python dependencies'
@@ -82,6 +93,13 @@ cat "$BUILD_DIR/requirements.txt"
 ### Build webpack bundle
 puts_step 'build webpack bundle'
 yarn build
+
+# move cache back
+if [ -d $BUILD_DIR/frontend/node_modules ]; then
+    echo '>> saving node_modules directory'
+    mkdir -p $CACHE_DIR/node-modules-cache
+    mv $BUILD_DIR/frontend/node_modules  $CACHE_DIR/node-modules-cache
+fi
 
 ### Configure NGINX
 puts_step 'configure nginx'

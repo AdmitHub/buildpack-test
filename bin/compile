@@ -30,7 +30,7 @@ puts_step 'install aws cli'
 if [ ! -f "$CACHE_DIR/awscli/awscli-bundle" ]; then
     mkdir -p "$CACHE_DIR/awscli"
     curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "$CACHE_DIR/awscli/awscli-bundle.zip"
-    unzip "$CACHE_DIR/awscli/awscli-bundle.zip"
+    unzip "$CACHE_DIR/awscli/awscli-bundle.zip" -d "$CACHE_DIR/awscli/awscli-bundle"
 fi
 . "$CACHE_DIR/awscli/awscli-bundle/install" -b ~/bin/aws
 export PATH=~/bin:$PATH

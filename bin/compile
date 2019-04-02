@@ -32,6 +32,11 @@ curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
 ./awscli-bundle/install -b ~/bin/aws
 export PATH=~/bin:$PATH
+### TESTING
+mkdir -p $BUILD_DIR/frontend/build
+echo helloworld123 > $BUILD_DIR/frontend/build
+aws s3 cp --recursive $BUILD_DIR/frontend/build "s3://$S3_PUBLIC_ASSET_BUCKET_NAME/frontend"
+### TESTING
 
 ### Install node/yarn
 

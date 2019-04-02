@@ -28,6 +28,7 @@ export_env "$ENV_DIR"
 ### Vendor files into the build dir (which becomes /app at runtime)
 
 cd "$BUILD_DIR"
+pip3 install awscli
 
 ### Install node/yarn
 
@@ -83,7 +84,6 @@ cp "$BUILD_DIR/nginx/nginx.conf.erb" "$BUILD_DIR/config"
 
 ### Upload frontend static files to S3
 puts_step 'upload static files to s3'
-python3 -m pip install awscli
 aws s3 cp --recursive $BUILD_DIR/frontend/build "s3://$S3_PUBLIC_ASSET_BUCKET_NAME/frontend"
 
 ### Compile stuff

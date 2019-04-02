@@ -27,9 +27,11 @@ export_env "$ENV_DIR"
 
 ### Install aws cli
 puts_step 'install aws cli'
-curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-unzip awscli-bundle.zip
-./awscli-bundle/install -b ~/bin/aws
+if [ ! -f "$CACHE_DIR/awscli/awscli-bundle" ]; then
+    curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "$CACHE_DIR/awscli/awscli-bundle.zip"
+    unzip "$CACHE_DIR/awscli/awscli-bundle.zip"
+fi
+./"$CACHE_DIR/awscli/awscli-bundle" -b ~/bin/aws
 export PATH=~/bin:$PATH
 
 ### Vendor files into the build dir (which becomes /app at runtime)

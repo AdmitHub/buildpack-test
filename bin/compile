@@ -106,6 +106,24 @@ puts_step 'configure nginx'
 mkdir -p "$BUILD_DIR/config"
 cp "$BUILD_DIR/nginx/nginx.conf.erb" "$BUILD_DIR/config"
 
+### Install StatsD
+puts_step 'setup statsd'
+STATSD_VERSION="v0.8.3"
+STATSD_FILE_NAME="$STATSD_VERSION.zip"
+wget "https://github.com/statsd/statsd/archive/$STATSD_FILE_NAME"
+unzip "$STATSD_FILE_NAME"
+STATSD_DEST_DIR="$BUILD_DIR/backend/statsd"
+mv "statsd-$STATSD_VERSION" "$STATSD_DEST_DIR"
+# install librato backend
+pushd "$STATSD_DEST_DIR"
+yarn add statsd-librato-backend@2.0.16
+popd
+# see heroku docs for more info buildpacks with .profile.d/ scripts
+# https://devcenter.heroku.com/articles/buildpack-api#profile-d-scripts
+PROFILE_D_DIR="$BUILD_DIR/.profile.d/"
+mkdir -p "$PROFILE_D_DIR"
+mv "$BUILD_DIR/backend/start-statsd.sh" "$PROFILE_D_DIR"
+
 ### Upload frontend static files to S3
 puts_step 'upload static files to s3'
 aws s3 cp --recursive $BUILD_DIR/frontend/build/static "s3://$S3_PUBLIC_ASSET_BUCKET_NAME/frontend/static"

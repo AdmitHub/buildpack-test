@@ -108,8 +108,8 @@ cp "$BUILD_DIR/nginx/nginx.conf.erb" "$BUILD_DIR/config"
 
 ### Install StatsD
 puts_step 'setup statsd'
-STATSD_VERSION="v0.8.3"
-STATSD_FILE_NAME="$STATSD_VERSION.zip"
+STATSD_VERSION="0.8.3"
+STATSD_FILE_NAME="v$STATSD_VERSION.zip"
 wget "https://github.com/statsd/statsd/archive/$STATSD_FILE_NAME"
 unzip "$STATSD_FILE_NAME"
 STATSD_DEST_DIR="$BUILD_DIR/backend/statsd"

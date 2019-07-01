@@ -14,6 +14,9 @@ BUILD_DIR=${1:-}
 CACHE_DIR=${2:-}
 ENV_DIR=${3:-}
 BP_DIR=$(cd "$(dirname "$0")"; cd ..; pwd)
+# required by `set_env()`
+# see: https://github.com/heroku/buildpack-stdlib/blob/2611c7d236cfc367eecee9488cf0459d0276955c/stdlib.sh#L69
+PROFILE_PATH="$BUILD_DIR/.profile.d/"
 
 ### Load the standard lib
 
@@ -123,9 +126,8 @@ yarn add statsd-librato-backend@2.0.16
 popd
 # see heroku docs for more info buildpacks with .profile.d/ scripts
 # https://devcenter.heroku.com/articles/buildpack-api#profile-d-scripts
-PROFILE_D_DIR="$BUILD_DIR/.profile.d/"
-mkdir -p "$PROFILE_D_DIR"
-mv "$BUILD_DIR/backend/start-statsd.sh" "$PROFILE_D_DIR"
+mkdir -p "$PROFILE_PATH"
+mv "$BUILD_DIR/backend/start-statsd.sh" "$PROFILE_PATH"
 
 ### Upload frontend static files to S3
 puts_step 'upload static files to s3'

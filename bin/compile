@@ -21,7 +21,6 @@ PROFILE_D_PATH="$BUILD_DIR/.profile.d"
 # see: https://github.com/heroku/buildpack-stdlib/blob/2611c7d236cfc367eecee9488cf0459d0276955c/stdlib.sh#L69
 PROFILE_PATH="$PROFILE_D_PATH/statsd.sh"
 mkdir -p "$PROFILE_D_PATH"
-touch "$PROFILE_PATH"
 EXPORT_PATH="$BIN_DIR/../export"
 
 ### Load the standard lib
@@ -57,8 +56,7 @@ mkdir -p .heroku/yarn
 # add to path
 export PATH="$PATH:$BUILD_DIR/.heroku/node/bin:$BUILD_DIR/.heroku/yarn/bin"
 export PATH="$PATH:/app/.heroku/node/bin"
-# https://github.com/AdmitHub/heroku-buildpack-python/blob/49863be611110fbee9bdbc768ea722f496127ac1/bin/compile#L316
-set_env PATH "\$HOME/.heroku/node/bin:\$PATH"
+
 
 puts_step 'install node & yarn'
 
@@ -133,6 +131,8 @@ popd
 # see heroku docs for more info buildpacks with .profile.d/ scripts
 # https://devcenter.heroku.com/articles/buildpack-api#profile-d-scripts
 mv "$BUILD_DIR/backend/start-statsd.sh" "$PROFILE_PATH"
+# https://github.com/AdmitHub/heroku-buildpack-python/blob/49863be611110fbee9bdbc768ea722f496127ac1/bin/compile#L316
+set_env PATH "\$HOME/.heroku/node/bin:\$PATH"
 
 ### Upload frontend static files to S3
 puts_step 'upload static files to s3'

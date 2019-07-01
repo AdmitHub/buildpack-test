@@ -46,7 +46,9 @@ cd "$BUILD_DIR"
 mkdir -p .heroku/node
 mkdir -p .heroku/yarn
 # add to path
-export PATH="$PATH:$BUILD_DIR/.heroku/node/bin:$BUILD_DIR/.heroku/yarn/bin"
+export PATH="$PATH:$HOME/.heroku/node/bin:$HOME/.heroku/yarn/bin"
+# https://github.com/AdmitHub/heroku-buildpack-python/blob/49863be611110fbee9bdbc768ea722f496127ac1/bin/compile#L316
+set_env PATH "\$HOME/.heroku/node/bin:\$PATH"
 
 puts_step 'install node & yarn'
 

@@ -14,7 +14,7 @@ BUILD_DIR=${1:-}
 CACHE_DIR=${2:-}
 ENV_DIR=${3:-}
 BP_DIR=$(cd "$(dirname "$0")"; cd ..; pwd)
-PROFILE_D_PATH="$BUILD_DIR/.profile.d/"
+PROFILE_D_PATH="$BUILD_DIR/.profile.d"
 # required by `set_env()`
 # see: https://github.com/heroku/buildpack-stdlib/blob/2611c7d236cfc367eecee9488cf0459d0276955c/stdlib.sh#L69
 PROFILE_PATH="$PROFILE_D_PATH/statsd.sh"

@@ -13,6 +13,8 @@ unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
 BUILD_DIR=${1:-}
 CACHE_DIR=${2:-}
 ENV_DIR=${3:-}
+# from: https://github.com/AdmitHub/heroku-buildpack-python/blob/49863be611110fbee9bdbc768ea722f496127ac1/bin/compile#L29
+BIN_DIR=$(cd "$(dirname "$0")"; pwd) # absolute path
 BP_DIR=$(cd "$(dirname "$0")"; cd ..; pwd)
 PROFILE_D_PATH="$BUILD_DIR/.profile.d"
 # required by `set_env()`
@@ -20,6 +22,7 @@ PROFILE_D_PATH="$BUILD_DIR/.profile.d"
 PROFILE_PATH="$PROFILE_D_PATH/statsd.sh"
 mkdir -p "$PROFILE_D_PATH"
 touch "$PROFILE_PATH"
+EXPORT_PATH="$BIN_DIR/../export"
 
 ### Load the standard lib
 

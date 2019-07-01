@@ -128,12 +128,12 @@ mv "statsd-$STATSD_VERSION" "$STATSD_DEST_DIR"
 pushd "$STATSD_DEST_DIR"
 yarn add statsd-librato-backend@2.0.16
 popd
+# https://github.com/AdmitHub/heroku-buildpack-python/blob/49863be611110fbee9bdbc768ea722f496127ac1/bin/compile#L316
+# we want this to be at the start of what will be statsd.sh
+set_env PATH "\$HOME/.heroku/node/bin:\$PATH"
 # see heroku docs for more info buildpacks with .profile.d/ scripts
 # https://devcenter.heroku.com/articles/buildpack-api#profile-d-scripts
-mv "$BUILD_DIR/backend/start-statsd.sh" "$PROFILE_PATH"
-# https://github.com/AdmitHub/heroku-buildpack-python/blob/49863be611110fbee9bdbc768ea722f496127ac1/bin/compile#L316
-set_env PATH "\$HOME/.heroku/node/bin:\$PATH"
-
+cat "$BUILD_DIR/backend/start-statsd.sh" >> "$PROFILE_PATH"
 ### Upload frontend static files to S3
 puts_step 'upload static files to s3'
 aws s3 cp --recursive $BUILD_DIR/frontend/build/static "s3://$S3_PUBLIC_ASSET_BUCKET_NAME/frontend/static"

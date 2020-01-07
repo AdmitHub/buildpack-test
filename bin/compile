@@ -39,6 +39,14 @@ export PATH=~/bin:$PATH
 
 cd "$BUILD_DIR"
 
+### Install node
+puts_step 'install node'
+mkdir -p .heroku/node
+export PATH="$PATH:$BUILD_DIR/.heroku/node/bin"
+curl --silent --retry 5 --retry-max-time 15 "https://nodejs.org/dist/v11.11.0/node-v11.11.0-linux-x64.tar.xz" -o /tmp/node.tar.xz
+tar xf /tmp/node.tar.xz -C .heroku/node --strip 1
+echo 'node version:' $(node --version)
+
 ### Convert poetry.lock to requirements.txt
 puts_step 'convert python dependencies'
 cp "$BP_DIR/toml-to-requirements.js" .

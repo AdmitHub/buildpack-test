@@ -109,7 +109,6 @@ mkdir -p "$BUILD_DIR/config"
 cp "$BUILD_DIR/nginx/nginx.conf.erb" "$BUILD_DIR/config"
 
 ### Upload frontend static files to S3
-puts_step 'upload static files to s3'
 if [[ -z "${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}" ]]; then
   fail "build artifacts s3 bucket name not set"
 fi

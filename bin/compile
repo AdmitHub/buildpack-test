@@ -39,13 +39,39 @@ export PATH=~/bin:$PATH
 
 cd "$BUILD_DIR"
 
-### Install node
-puts_step 'install node'
+
+### Install node/yarn
+
+# create directory for installed utilities
 mkdir -p .heroku/node
-export PATH="$PATH:$BUILD_DIR/.heroku/node/bin"
+mkdir -p .heroku/yarn
+# add to path
+export PATH="$PATH:$BUILD_DIR/.heroku/node/bin:$BUILD_DIR/.heroku/yarn/bin"
+
+puts_step 'install node & yarn'
+
 curl --silent --retry 5 --retry-max-time 15 "https://nodejs.org/dist/v11.11.0/node-v11.11.0-linux-x64.tar.xz" -o /tmp/node.tar.xz
 tar xf /tmp/node.tar.xz -C .heroku/node --strip 1
+
+curl --silent --retry 5 --retry-max-time 15 -L "https://github.com/yarnpkg/yarn/releases/download/v1.15.0/yarn-v1.15.0.tar.gz" -o /tmp/yarn.tar.gz
+tar zxf /tmp/yarn.tar.gz -C .heroku/yarn --strip 1
+
+echo 'yarn version:' $(yarn --version)
 echo 'node version:' $(node --version)
+
+### Install node dependencies
+cd "$BUILD_DIR/frontend"
+puts_step 'install node dependencies'
+# move cached node_modules
+if [ -d $CACHE_DIR/node-modules-cache/node_modules ]; then
+    echo '>> found cached node_modules directory'
+    mv  $CACHE_DIR/node-modules-cache/node_modules $BUILD_DIR/frontend/node_modules
+fi
+# setup yarn cache
+mkdir -p $CACHE_DIR/yarn-install-cache
+yarn install --frozen-lockfile --non-interactive --cache-folder $CACHE_DIR/yarn-install-cache
+# install toml for poetry conversion script
+yarn add --cache-folder $CACHE_DIR/yarn-install-cache --no-lockfile toml
 
 ### Convert poetry.lock to requirements.txt
 puts_step 'convert python dependencies'
@@ -63,6 +89,14 @@ fi
 node 'toml-to-requirements.js' "$LOCKFILE" > "$BUILD_DIR/requirements.txt"
 puts_step 'converted python requirements'
 cat "$BUILD_DIR/requirements.txt"
+
+
+# move cache back
+if [ -d $BUILD_DIR/frontend/node_modules ]; then
+    echo '>> saving node_modules directory'
+    mkdir -p $CACHE_DIR/node-modules-cache
+    mv $BUILD_DIR/frontend/node_modules  $CACHE_DIR/node-modules-cache
+fi
 
 ### Configure NGINX
 puts_step 'configure nginx'

@@ -21,6 +21,13 @@ STDLIB_FILE=$(mktemp -t stdlib.XXXXX)
 curl --silent --retry 5 --retry-max-time 15 'https://lang-common.s3.amazonaws.com/buildpack-stdlib/v7/stdlib.sh' > "$STDLIB_FILE"
 source "$STDLIB_FILE"
 
+### Helper functions
+
+fail() {
+    echo "${1}" 1>&2
+    exit 1
+}
+
 ### Load env vars
 
 export_env "$ENV_DIR"
@@ -82,8 +89,7 @@ if [ -f $BUILD_DIR/backend/poetry.lock ]; then
 elif [ -f $BUILD_DIR/backend/pyproject.lock ]; then
   LOCKFILE=$BUILD_DIR/backend/pyproject.lock
 else
-  echo "Lockfile not found!" 1>&2
-  exit 1
+  fail "Lockfile not found!"
 fi
 
 node 'toml-to-requirements.js' "$LOCKFILE" > "$BUILD_DIR/requirements.txt"
@@ -105,6 +111,12 @@ cp "$BUILD_DIR/nginx/nginx.conf.erb" "$BUILD_DIR/config"
 
 ### Upload frontend static files to S3
 puts_step 'upload static files to s3'
+if [[ -z "${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}" ]]; then
+  fail "build artifacts s3 bucket name not set"
+fi
+if [[ -z "${S3_PUBLIC_ASSET_BUCKET_NAME}" ]]; then
+  fail "public assets s3 bucket name not set"
+fi
 readonly frontend_asset_file="frontend.tar.gz"
 readonly git_sha="${SOURCE_VERSION}"
 aws s3 cp "s3://${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}/${git_sha}/${frontend_asset_file}" "${frontend_asset_file}"

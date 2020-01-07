@@ -76,7 +76,6 @@ if [ -d $CACHE_DIR/node-modules-cache/node_modules ]; then
 fi
 # setup yarn cache
 mkdir -p $CACHE_DIR/yarn-install-cache
-yarn install --frozen-lockfile --non-interactive --cache-folder $CACHE_DIR/yarn-install-cache
 # install toml for poetry conversion script
 yarn add --cache-folder $CACHE_DIR/yarn-install-cache --no-lockfile toml
 

@@ -69,15 +69,8 @@ echo 'node version:' $(node --version)
 ### Install node dependencies
 cd "$BUILD_DIR/frontend"
 puts_step 'install node dependencies'
-# move cached node_modules
-if [ -d $CACHE_DIR/node-modules-cache/node_modules ]; then
-    echo '>> found cached node_modules directory'
-    mv  $CACHE_DIR/node-modules-cache/node_modules $BUILD_DIR/frontend/node_modules
-fi
-# setup yarn cache
-mkdir -p $CACHE_DIR/yarn-install-cache
 # install toml for poetry conversion script
-yarn add --cache-folder $CACHE_DIR/yarn-install-cache --no-lockfile toml
+yarn add --no-lockfile toml
 
 ### Convert poetry.lock to requirements.txt
 puts_step 'convert python dependencies'
@@ -94,14 +87,6 @@ fi
 node 'toml-to-requirements.js' "$LOCKFILE" > "$BUILD_DIR/requirements.txt"
 puts_step 'converted python requirements'
 cat "$BUILD_DIR/requirements.txt"
-
-
-# move cache back
-if [ -d $BUILD_DIR/frontend/node_modules ]; then
-    echo '>> saving node_modules directory'
-    mkdir -p $CACHE_DIR/node-modules-cache
-    mv $BUILD_DIR/frontend/node_modules  $CACHE_DIR/node-modules-cache
-fi
 
 ### Configure NGINX
 puts_step 'configure nginx'

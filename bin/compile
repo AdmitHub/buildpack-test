@@ -108,11 +108,11 @@ aws s3 cp "s3://${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}/marshall/${git_sha}/fronten
 # NGINX looks on the host machine first and then checks S3 if a file isn't there.
 # This handles people on older bundles. However, we don't store the
 # `index.html` file in S3 as it determines which version the app is running.
-readonly static_files_dir="$BUILD_DIR/frontend/"
+readonly frontend_dir="${BUILD_DIR}/frontend/"
 puts_step 'unarchiving frontend files'
-tar xf "${frontend_asset_file}" -C "${static_files_dir}"
+tar xf "${frontend_asset_file}" -C "${frontend_dir}"
 puts_step 'uploading files to s3'
-aws s3 cp --recursive "${static_files_dir}/build/static" "s3://${S3_PUBLIC_ASSET_BUCKET_NAME}/frontend/static"
+aws s3 cp --recursive "${frontend_dir}/build/static" "s3://${S3_PUBLIC_ASSET_BUCKET_NAME}/frontend/static"
 
 ### Compile stuff
 

@@ -118,7 +118,7 @@ fi
 readonly frontend_asset_file="frontend.tar.gz"
 readonly git_sha="${SOURCE_VERSION}"
 puts_step 'copying files from s3'
-aws s3 cp "s3://${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}/${git_sha}/${frontend_asset_file}" "${frontend_asset_file}"
+aws s3 cp "s3://${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}/marshall/${git_sha}/frontend/${frontend_asset_file}" "${frontend_asset_file}"
 readonly static_files_dir="$(mktemp -d)"
 puts_step 'unarchiving frontend files'
 tar xf "${frontend_asset_file}" -C "${static_files_dir}"

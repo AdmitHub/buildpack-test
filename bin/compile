@@ -21,6 +21,13 @@ STDLIB_FILE=$(mktemp -t stdlib.XXXXX)
 curl --silent --retry 5 --retry-max-time 15 'https://lang-common.s3.amazonaws.com/buildpack-stdlib/v7/stdlib.sh' > "$STDLIB_FILE"
 source "$STDLIB_FILE"
 
+### Helper functions
+
+fail() {
+    echo "${1}" 1>&2
+    exit 1
+}
+
 ### Load env vars
 
 export_env "$ENV_DIR"
@@ -62,16 +69,8 @@ echo 'node version:' $(node --version)
 ### Install node dependencies
 cd "$BUILD_DIR/frontend"
 puts_step 'install node dependencies'
-# move cached node_modules
-if [ -d $CACHE_DIR/node-modules-cache/node_modules ]; then
-    echo '>> found cached node_modules directory'
-    mv  $CACHE_DIR/node-modules-cache/node_modules $BUILD_DIR/frontend/node_modules
-fi
-# setup yarn cache
-mkdir -p $CACHE_DIR/yarn-install-cache
-yarn install --frozen-lockfile --non-interactive --cache-folder $CACHE_DIR/yarn-install-cache
 # install toml for poetry conversion script
-yarn add --cache-folder $CACHE_DIR/yarn-install-cache --no-lockfile toml
+yarn add --no-lockfile toml
 
 ### Convert poetry.lock to requirements.txt
 puts_step 'convert python dependencies'
@@ -82,24 +81,12 @@ if [ -f $BUILD_DIR/backend/poetry.lock ]; then
 elif [ -f $BUILD_DIR/backend/pyproject.lock ]; then
   LOCKFILE=$BUILD_DIR/backend/pyproject.lock
 else
-  echo "Lockfile not found!" 1>&2
-  exit 1
+  fail "Lockfile not found!"
 fi
 
 node 'toml-to-requirements.js' "$LOCKFILE" > "$BUILD_DIR/requirements.txt"
 puts_step 'converted python requirements'
 cat "$BUILD_DIR/requirements.txt"
-
-### Build webpack bundle
-puts_step 'build webpack bundle'
-yarn build
-
-# move cache back
-if [ -d $BUILD_DIR/frontend/node_modules ]; then
-    echo '>> saving node_modules directory'
-    mkdir -p $CACHE_DIR/node-modules-cache
-    mv $BUILD_DIR/frontend/node_modules  $CACHE_DIR/node-modules-cache
-fi
 
 ### Configure NGINX
 puts_step 'configure nginx'
@@ -107,8 +94,25 @@ mkdir -p "$BUILD_DIR/config"
 cp "$BUILD_DIR/nginx/nginx.conf.erb" "$BUILD_DIR/config"
 
 ### Upload frontend static files to S3
-puts_step 'upload static files to s3'
-aws s3 cp --recursive $BUILD_DIR/frontend/build/static "s3://$S3_PUBLIC_ASSET_BUCKET_NAME/frontend/static"
+if [[ -z "${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}" ]]; then
+  fail "build artifacts s3 bucket name not set"
+fi
+if [[ -z "${S3_PUBLIC_ASSET_BUCKET_NAME}" ]]; then
+  fail "public assets s3 bucket name not set"
+fi
+readonly frontend_asset_file="frontend.tar.gz"
+readonly git_sha="${SOURCE_VERSION}"
+puts_step 'copying files from s3'
+aws s3 cp "s3://${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}/marshall/${git_sha}/frontend/${frontend_asset_file}" "${frontend_asset_file}"
+# We purposely leave the assets on the host for NGINX.
+# NGINX looks on the host machine first and then checks S3 if a file isn't there.
+# This handles people on older bundles. However, we don't store the
+# `index.html` file in S3 as it determines which version the app is running.
+readonly frontend_dir="${BUILD_DIR}/frontend/"
+puts_step 'unarchiving frontend files'
+tar xf "${frontend_asset_file}" -C "${frontend_dir}"
+puts_step 'uploading files to s3'
+aws s3 cp --recursive "${frontend_dir}/build/static" "s3://${S3_PUBLIC_ASSET_BUCKET_NAME}/frontend/static"
 
 ### Compile stuff
 

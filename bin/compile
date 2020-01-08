@@ -8,12 +8,15 @@ set -o errexit    # always exit on error
 set -o pipefail   # don't ignore exit codes when piping output
 unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
 
+echo "started @ $(date -u)"
+
 ### Configure directories
 
 BUILD_DIR=${1:-}
 CACHE_DIR=${2:-}
 ENV_DIR=${3:-}
 BP_DIR=$(cd "$(dirname "$0")"; cd ..; pwd)
+readonly start_time="$(date +%s)"
 
 ### Load the standard lib
 
@@ -66,27 +69,20 @@ tar zxf /tmp/yarn.tar.gz -C .heroku/yarn --strip 1
 echo 'yarn version:' $(yarn --version)
 echo 'node version:' $(node --version)
 
-### Install node dependencies
-cd "$BUILD_DIR/frontend"
+### Convert poetry.lock to requirements.txt for Heroku's Python buildpack
 puts_step 'install node dependencies'
-# install toml for poetry conversion script
-yarn add --no-lockfile toml
-
-### Convert poetry.lock to requirements.txt
-puts_step 'convert python dependencies'
-cp "$BP_DIR/toml-to-requirements.js" .
-
-if [ -f $BUILD_DIR/backend/poetry.lock ]; then
-  LOCKFILE=$BUILD_DIR/backend/poetry.lock
-elif [ -f $BUILD_DIR/backend/pyproject.lock ]; then
-  LOCKFILE=$BUILD_DIR/backend/pyproject.lock
-else
-  fail "Lockfile not found!"
-fi
-
-node 'toml-to-requirements.js' "$LOCKFILE" > "$BUILD_DIR/requirements.txt"
-puts_step 'converted python requirements'
-cat "$BUILD_DIR/requirements.txt"
+# Note: we install and convert the deps in a different dir from the project so
+# that `yarn` doesn't try and version solve with the `package.json` and its
+# dependencies.
+poetry_convert_dir="$(mktemp -d)"
+cp "${BUILD_DIR}/backend/poetry.lock" "${poetry_convert_dir}"
+cp "${BP_DIR}/toml-to-requirements.js" "${poetry_convert_dir}"
+pushd "${poetry_convert_dir}"
+yarn add toml
+node "toml-to-requirements.js" poetry.lock > "${BUILD_DIR}/requirements.txt"
+popd
+cat "${BUILD_DIR}/requirements.txt"
+puts_step 'converted python requirements finished!'
 
 ### Configure NGINX
 puts_step 'configure nginx'
@@ -115,5 +111,6 @@ puts_step 'uploading files to s3'
 aws s3 cp --recursive "${frontend_dir}/build/static" "s3://${S3_PUBLIC_ASSET_BUCKET_NAME}/frontend/static"
 
 ### Compile stuff
+readonly end_time="$(date +%s)"
 
-echo "🎉  Finished!"
+echo "🎉 Finished in $(( end_time - start_time ))s"

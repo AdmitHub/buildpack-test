@@ -68,6 +68,9 @@ echo 'node version:' $(node --version)
 
 ### Convert poetry.lock to requirements.txt for Heroku's Python buildpack
 puts_step 'install node dependencies'
+# Note: we install and convert the deps in a different dir from the project so
+# that `yarn` doesn't try and version solve with the `package.json` and its
+# dependencies.
 poetry_convert_dir="$(mktemp -d)"
 cp "${BUILD_DIR}/backend/poetry.lock" "${poetry_convert_dir}"
 pushd "${poetry_convert_dir}"

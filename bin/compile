@@ -73,9 +73,10 @@ puts_step 'install node dependencies'
 # dependencies.
 poetry_convert_dir="$(mktemp -d)"
 cp "${BUILD_DIR}/backend/poetry.lock" "${poetry_convert_dir}"
+cp "${BP_DIR}/toml-to-requirements.js" "${poetry_convert_dir}"
 pushd "${poetry_convert_dir}"
-yarn add --no-lockfile toml
-node "${BP_DIR}/toml-to-requirements.js" poetry.lock > "${BUILD_DIR}/requirements.txt"
+yarn add toml
+node "toml-to-requirements.js" poetry.lock > "${BUILD_DIR}/requirements.txt"
 popd
 cat "${BUILD_DIR}/requirements.txt"
 puts_step 'converted python requirements finished!'

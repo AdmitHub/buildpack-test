@@ -14,6 +14,7 @@ BUILD_DIR=${1:-}
 CACHE_DIR=${2:-}
 ENV_DIR=${3:-}
 BP_DIR=$(cd "$(dirname "$0")"; cd ..; pwd)
+readonly start_time="$(date +%s)"
 
 ### Load the standard lib
 
@@ -108,5 +109,6 @@ puts_step 'uploading files to s3'
 aws s3 cp --recursive "${frontend_dir}/build/static" "s3://${S3_PUBLIC_ASSET_BUCKET_NAME}/frontend/static"
 
 ### Compile stuff
+readonly end_time="$(date +%s)"
 
-echo "🎉  Finished!"
+echo "🎉 Finished in $(( end_time - start_time ))s"

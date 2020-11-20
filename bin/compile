@@ -105,7 +105,7 @@ while [ ! "$(aws s3 ls "$asset_path")" ]; do
     sleep 1
 done
 puts_step 'copying files from s3'
-aws s3 cp "s3://${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}/marshall/${git_sha}/frontend/${frontend_asset_file}" "${frontend_asset_file}"
+aws s3 cp "$asset_path" "${frontend_asset_file}"
 # We purposely leave the assets on the host for NGINX.
 # NGINX looks on the host machine first and then checks S3 if a file isn't there.
 # This handles people on older bundles. However, we don't store the

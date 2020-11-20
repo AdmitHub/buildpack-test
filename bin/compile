@@ -98,8 +98,14 @@ if [[ -z "${S3_PUBLIC_ASSET_BUCKET_NAME}" ]]; then
 fi
 readonly frontend_asset_file="frontend.tar.gz"
 readonly git_sha="${SOURCE_VERSION}"
+readonly asset_path="s3://${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}/marshall/${git_sha}/frontend/${frontend_asset_file}"
+puts_step 'checking for frontend build files in s3'
+while [ ! "$(aws s3 ls "$asset_path")" ]; do
+    puts_step 'frontend build files not found, waiting 1 second'
+    sleep 1
+done
 puts_step 'copying files from s3'
-aws s3 cp "s3://${S3_AH_BUILD_ARTIFACTS_BUCKET_NAME}/marshall/${git_sha}/frontend/${frontend_asset_file}" "${frontend_asset_file}"
+aws s3 cp "$asset_path" "${frontend_asset_file}"
 # We purposely leave the assets on the host for NGINX.
 # NGINX looks on the host machine first and then checks S3 if a file isn't there.
 # This handles people on older bundles. However, we don't store the

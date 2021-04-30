@@ -46,6 +46,7 @@ $CACHE_DIR/awscli/awscli-bundle/install -b ~/bin/aws
 export PATH=~/bin:$PATH
 
 ### Install Datadog agent
+puts_step 'install datadog agent'
 bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
 
 
